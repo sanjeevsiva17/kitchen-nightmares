@@ -1,6 +1,8 @@
 # Kitchen nightmares
 ## Getting started
 
+Install [RabbitMQ](https://www.rabbitmq.com/download.html)
+
 Create a virtual environment
 
     virtualenv -p python3 env
@@ -11,6 +13,12 @@ Create a virtual environment
     pip install -r requirements.txt
     
 Finally 
+
+Run RabbitMQ for the messaging queue in the background in a different terminal
+
+`rabbitmq-server`
+
+Start the server
 
 `python manage.py runserver`
 
