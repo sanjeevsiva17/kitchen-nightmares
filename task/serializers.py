@@ -8,12 +8,12 @@ class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ("id", "title", "priority", "created_by", "is_active")
+        fields = ("id", "title", "priority", "is_active")
 
 
 class TaskStateSerializer(serializers.ModelSerializer):
-    task = serializers.RelatedField(source="task", read_only=True)
-    accepted_by = serializers.RelatedField(source=get_user_model(), read_only=True)
+    # task = serializers.RelatedField(source="task", read_only=True)
+    # accepted_by = serializers.RelatedField(source=get_user_model(), read_only=True)
 
     class Meta:
         model = TaskState
