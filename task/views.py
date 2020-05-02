@@ -19,7 +19,8 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Creating a post"""
-        serializer.save(created_by=self.request.user)
+        task = serializer.save(created_by=self.request.user)
+        TaskState.objects.create(task=task)
 
 
 class TaskStateViewSet(viewsets.ModelViewSet):
@@ -28,5 +29,12 @@ class TaskStateViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        return self.queryset.filter(accepted_by=self.request.user)
+    # def get_queryset(self):
+    #     return self.queryset.filter(accepted_by=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.instance.accepted()
+        serializer.instance.save()
+        print("update")
+        pass
+

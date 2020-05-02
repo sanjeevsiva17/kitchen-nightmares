@@ -17,29 +17,29 @@ def publish(message, priority):
         body=json.dumps(message)
     )
 
-task_body_1 = {
-    "id": 1,
-    "title": "12345678",
-    "priority": "H",
-    "created_by": 1,
-    "is_active": True
-}
-
-task_body_2 = {
-    "id": 1,
-    "title": "12345678",
-    "priority": "M",
-    "created_by": 1,
-    "is_active": True
-}
-
-task_body_3 = {
-    "id": 1,
-    "title": "12345678",
-    "priority": "L",
-    "created_by": 1,
-    "is_active": True
-}
+# task_body_1 = {
+#     "id": 1,
+#     "title": "12345678",
+#     "priority": "H",
+#     "created_by": 1,
+#     "is_active": True
+# }
+#
+# task_body_2 = {
+#     "id": 1,
+#     "title": "12345678",
+#     "priority": "M",
+#     "created_by": 1,
+#     "is_active": True
+# }
+#
+# task_body_3 = {
+#     "id": 1,
+#     "title": "12345678",
+#     "priority": "L",
+#     "created_by": 1,
+#     "is_active": True
+# }
 
 
 # publish(task_body_3, 3)

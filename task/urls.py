@@ -8,5 +8,4 @@ router.register('taskstate', views.TaskStateViewSet)
 
 urlpatterns = [
     path("tasks/", include(router.urls)),
-    path("taskstate/", include(router.urls))
 ]

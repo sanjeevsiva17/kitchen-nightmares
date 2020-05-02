@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'users',
     'task',
     'channels',
+    'django_fsm',
 ]
 
 MIDDLEWARE = [

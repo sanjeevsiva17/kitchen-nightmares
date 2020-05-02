@@ -12,7 +12,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 class TaskStateSerializer(serializers.ModelSerializer):
-    # task = serializers.RelatedField(source="task", read_only=True)
+    # task = TaskSerializer()
     # accepted_by = serializers.RelatedField(source=get_user_model(), read_only=True)
 
     class Meta:

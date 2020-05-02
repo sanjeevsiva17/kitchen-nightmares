@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from rabbitmq.send import publish
+from django_fsm import FSMField, transition
 
 
 # Create your models here.
@@ -56,10 +57,30 @@ class TaskState(TimeStampMixin):
     STATES_CHOICES = [(NEW, 'NEW'), (ACCEPTED, 'ACCEPTED'), (COMPLETED, 'COMPLETED'), (DECLINED, 'LOW'),
                       (CANCELED, 'CAN')]
 
-    task = models.ForeignKey(Task, on_delete=models.CASCADE)
-    accepted_by = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    state = models.CharField(
+    task = models.OneToOneField(Task, on_delete=models.CASCADE)
+    accepted_by = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True)
+    state = FSMField(
         default=NEW,
         choices=STATES_CHOICES,
-        max_length=3
+        protected=True
     )
+
+    @transition(field=state, source=NEW, target=ACCEPTED)
+    def accepted(self):
+        print(self.ACCEPTED)
+        pass
+
+    @transition(field=state, source=ACCEPTED, target=COMPLETED)
+    def completed(self):
+        print(self.COMPLETED)
+        pass
+
+    @transition(field=state, source=ACCEPTED, target=NEW)
+    def declined(self):
+        print(self.DECLINED)
+        pass
+
+    @transition(field=state, source=[NEW, ACCEPTED], target=CANCELED)
+    def canceled(self):
+        print(self.CANCELED)
+        pass
