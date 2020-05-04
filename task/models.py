@@ -4,7 +4,12 @@ from rabbitmq.send import publish
 from django_fsm import FSMField, transition
 
 
-# Create your models here.
+
+# Create your models here
+
+HIGH = 'H'
+MEDIUM = 'M'
+LOW = 'L'
 
 class TimeStampMixin(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -54,15 +59,15 @@ class TaskState(TimeStampMixin):
     DECLINED = 'DEC'
     CANCELED = 'CAN'
 
-    STATES_CHOICES = [(NEW, 'NEW'), (ACCEPTED, 'ACCEPTED'), (COMPLETED, 'COMPLETED'), (DECLINED, 'LOW'),
-                      (CANCELED, 'CAN')]
+    STATES_CHOICES = [(NEW, 'NEW'), (ACCEPTED, 'ACCEPTED'), (COMPLETED, 'COMPLETED'), (DECLINED, 'DECLINED'),
+                      (CANCELED, 'CANCELED')]
 
     task = models.OneToOneField(Task, on_delete=models.CASCADE)
     accepted_by = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True)
     state = FSMField(
         default=NEW,
         choices=STATES_CHOICES,
-        protected=True
+        # protected=True
     )
 
     @transition(field=state, source=NEW, target=ACCEPTED)
@@ -77,8 +82,20 @@ class TaskState(TimeStampMixin):
 
     @transition(field=state, source=ACCEPTED, target=NEW)
     def declined(self):
+        TaskObj = {}
+        TaskObj["id"] = self.task.id
+        TaskObj["title"] = self.task.title
+        TaskObj["priority"] = self.task.priority
+        if self.task.priority == HIGH:
+            priority = 3
+        elif self.task.priority == MEDIUM:
+            priority = 2
+        else:
+            priority = 1
+        TaskObj["created_by"] = self.task.created_by.id
+        TaskObj["is_active"] = self.task.is_active
+        publish(TaskObj, priority)
         print(self.DECLINED)
-        pass
 
     @transition(field=state, source=[NEW, ACCEPTED], target=CANCELED)
     def canceled(self):

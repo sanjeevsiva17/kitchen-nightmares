@@ -8,4 +8,5 @@ router.register('taskstate', views.TaskStateViewSet)
 
 urlpatterns = [
     path("tasks/", include(router.urls)),
+    path("taskdata", views.TaskwithState.as_view(), name="taskdata")
 ]

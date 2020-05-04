@@ -11,7 +11,7 @@ application = ProtocolTypeRouter({
         AuthMiddlewareStack(
             URLRouter(
                 [
-                    path("accept/", AcceptTaskConsumer),
+                    path("dashboard/", AcceptTaskConsumer),
                 ]
             )
     )
