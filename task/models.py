@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from rabbitmq.send import publish
 from django_fsm import FSMField, transition
-
+from redis_notifications.notifications import setDeclined
 
 
 # Create your models here
@@ -67,7 +67,6 @@ class TaskState(TimeStampMixin):
     state = FSMField(
         default=NEW,
         choices=STATES_CHOICES,
-        # protected=True
     )
 
     @transition(field=state, source=NEW, target=ACCEPTED)
@@ -94,6 +93,7 @@ class TaskState(TimeStampMixin):
             priority = 1
         TaskObj["created_by"] = self.task.created_by.id
         TaskObj["is_active"] = self.task.is_active
+        setDeclined(str(TaskObj["id"]), str(TaskObj["title"]))
         publish(TaskObj, priority)
         print(self.DECLINED)
 

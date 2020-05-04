@@ -4,6 +4,7 @@ from asgiref.sync import sync_to_async
 from channels.consumer import AsyncConsumer
 from rabbitmq.recieve import consume
 import pika
+from redis_notifications import getDeclined, delDeclined
 
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(host='localhost'))
@@ -15,7 +16,7 @@ class AcceptTaskConsumer(AsyncConsumer):
     first = True
 
     async def websocket_connect(self, event):
-        print("connected", event)
+        print("AcceptTaskConsumer connected", event)
         await self.channel_layer.group_add(
             "delivery",
             self.channel_name
@@ -28,7 +29,7 @@ class AcceptTaskConsumer(AsyncConsumer):
     async def websocket_receive(self, event):
         if event["text"] == "Hi":
             task = await self.get_task()
-            print("here", task)
+            print(task)
             await self.channel_layer.group_send(
                 "delivery",
                 {
@@ -51,6 +52,40 @@ class AcceptTaskConsumer(AsyncConsumer):
         })
 
     async def websocket_disconnect(self, event):
+        print(event)
         await self.send({
             "type": "websocket.close"
         })
+
+
+class DeclinedTaskConsumer(AsyncConsumer):
+    async def websocket_connect(self, event):
+        print("DeclinedTaskConsumer connected ", event)
+        await self.send({
+            "type": "websocket.accept"
+        })
+
+    async def websocket_receive(self, event):
+        print("Declined received ", event)
+        if event["text"] == "Hi":
+            declined = await self.getDec()
+            print("declined", declined)
+            await self.send({
+                "type": "websocket.accept",
+                "text": json.dumps(declined)
+            })
+
+            delDeclined()
+
+    async def websocket_disconnect(self, event):
+        print(event)
+        await self.send({
+            "type": "websocket.close"
+        })
+
+    @sync_to_async
+    def getDec(self):
+        while True:
+            x = getDeclined()
+            if x is not None:
+                return x

@@ -3,7 +3,7 @@ from channels.security.websocket import AllowedHostsOriginValidator
 from channels.auth import AuthMiddlewareStack
 from django.conf.urls import url
 from django.urls import path
-from task.consumers import AcceptTaskConsumer
+from task.consumers import AcceptTaskConsumer, DeclinedTaskConsumer
 
 application = ProtocolTypeRouter({
     # Empty for now (http->django views is added by default)
@@ -12,6 +12,7 @@ application = ProtocolTypeRouter({
             URLRouter(
                 [
                     path("dashboard/", AcceptTaskConsumer),
+                    # path("declined/", DeclinedTaskConsumer),
                 ]
             )
     )
