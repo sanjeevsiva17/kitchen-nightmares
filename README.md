@@ -28,6 +28,12 @@ Run Redis for Django channel layers and declined notifications.
 
 `redis-server` 
 
+Make migrations and migrate
+
+`python manage.py makemigrations`
+
+`python manage.py migrate`
+
 Start the server
 
 `python manage.py runserver`
