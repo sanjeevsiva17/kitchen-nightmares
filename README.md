@@ -1,7 +1,10 @@
 # Kitchen nightmares
+
+[Diagram](https://github.com/sanjeevsiva17/kitchen-nightmares/Diagram.png)
+
 ## Getting started
 
-###Recommended Start
+### Recommended Start
     
     git clone
     cd kitchen-nightmares
@@ -29,4 +32,14 @@ Start the server
 
 `python manage.py runserver`
 
+
+### Libraries
+
+[Django-fsm](https://github.com/viewflow/django-fsm)
+
+[Django-Channels](https://github.com/django/channels)
+
+[pika](https://github.com/pika/pika)
+
+[redis-py](https://github.com/andymccurdy/redis-py/tree/a9347cd0bc3c361cbdf4af6811ee465211eabdb0)
 
