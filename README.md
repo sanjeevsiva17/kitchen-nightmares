@@ -1,6 +1,6 @@
 # Kitchen nightmares
 
-[Diagram](https://github.com/sanjeevsiva17/kitchen-nightmares/blob/master/Diagram.png?raw=true)
+![Alt Diagram](https://github.com/sanjeevsiva17/kitchen-nightmares/blob/master/Diagram.png?raw=true)
 
 ## Getting started
 
