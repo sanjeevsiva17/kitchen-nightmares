@@ -15,8 +15,10 @@ class AcceptTaskConsumer(AsyncConsumer):
 
     async def websocket_connect(self, event):
         print("AcceptTaskConsumer connected", event)
+
+        self.room_group_name = "delivery"
         await self.channel_layer.group_add(
-            "delivery",
+            self.room_group_name,
             self.channel_name
         )
 
@@ -27,30 +29,50 @@ class AcceptTaskConsumer(AsyncConsumer):
     async def websocket_receive(self, event):
         if event["text"] == "Hi":
             await self.get_task()
-            # self.channel.basic_ack(delivery_tag)
             if self.body is not None:
-                # print(self.body)
+                print(self.body)
                 await self.channel_layer.group_send(
-                    "delivery",
+                    self.room_group_name,
                     {
                         "type": "message",
                         "text": self.body.pop(0)["body"]
                     }
                 )
+            else:
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        "type": "message",
+                        "text": "No New Tasks"
+                    }
+                )
+
         else:
             print(json.loads(event["text"])["id"])
             self.channel.basic_ack(delivery_tag=self.delivery[json.loads(event["text"])["id"]])
             self.delivery.pop(json.loads(event["text"])["id"])
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "message",
+                    "text": "No New Tasks"
+                }
+            )
             await self.get_task()
             if self.body is not None:
                 await self.channel_layer.group_send(
-                    "delivery",
+                    self.room_group_name,
                     {
                         "type": "message",
                         "text": self.body.pop(0)["body"]
                     }
                 )
 
+    async def message(self, event):
+        await self.send({
+            "type": "websocket.send",
+            "text": event["text"]
+        })
 
     @sync_to_async
     def get_task(self):
@@ -71,17 +93,16 @@ class AcceptTaskConsumer(AsyncConsumer):
         self.delivery[json.loads(json.loads(task_obj["body"]))["id"]] = method.delivery_tag
         self.channel.stop_consuming()
 
-    async def message(self, event):
-        await self.send({
-            "type": "websocket.send",
-            "text": event["text"]
-        })
-
     async def websocket_disconnect(self, event):
         print(event)
         await self.send({
             "type": "websocket.close"
         })
+
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
 
 # class DeclinedTaskConsumer(AsyncConsumer):
 #     async def websocket_connect(self, event):
