@@ -11,12 +11,7 @@ class AcceptTaskConsumer(AsyncConsumer):
     accepted = True
     first = True
     body = []
-
-    def __init__(self, scope):
-        super().__init__(scope)
-        self.channel = self.connection.channel()
-        self.connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='localhost'))
+    delivery = {}
 
     async def websocket_connect(self, event):
         print("AcceptTaskConsumer connected", event)
@@ -32,32 +27,48 @@ class AcceptTaskConsumer(AsyncConsumer):
     async def websocket_receive(self, event):
         if event["text"] == "Hi":
             await self.get_task()
+            # self.channel.basic_ack(delivery_tag)
+            if self.body is not None:
+                # print(self.body)
+                await self.channel_layer.group_send(
+                    "delivery",
+                    {
+                        "type": "message",
+                        "text": self.body.pop(0)["body"]
+                    }
+                )
+        else:
+            print(json.loads(event["text"])["id"])
+            self.channel.basic_ack(delivery_tag=self.delivery[json.loads(event["text"])["id"]])
+            self.delivery.pop(json.loads(event["text"])["id"])
+            await self.get_task()
             if self.body is not None:
                 await self.channel_layer.group_send(
                     "delivery",
                     {
                         "type": "message",
-                        "text": json.dumps(self.body.pop().decode("utf-8"))
+                        "text": self.body.pop(0)["body"]
                     }
                 )
 
+
     @sync_to_async
     def get_task(self):
-        # while True:
-        #     task_body = consume()
-        #     if task_body is not None:
-        #         return json.dumps(task_body.decode("utf-8"))
+        self.connection = pika.BlockingConnection(
+            pika.ConnectionParameters(host='localhost'))
+        self.channel = self.connection.channel()
 
         self.channel.queue_declare(queue='task_', arguments={"x-max-priority": 3})
 
         self.channel.basic_consume(
-            queue='task_', on_message_callback=self.callback, auto_ack=True)
+            queue='task_', on_message_callback=self.callback, auto_ack=False)
         self.channel.start_consuming()
 
     def callback(self, ch, method, properties, body):
-        print(body)
-        self.body.append(body)
-        # ch.stop_consuming()
+        task_obj = {"body": json.dumps(body.decode("utf-8")),
+                    "delivery_tag": method.delivery_tag}
+        self.body.append(task_obj)
+        self.delivery[json.loads(json.loads(task_obj["body"]))["id"]] = method.delivery_tag
         self.channel.stop_consuming()
 
     async def message(self, event):
