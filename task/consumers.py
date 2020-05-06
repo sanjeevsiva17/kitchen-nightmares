@@ -2,7 +2,6 @@ import json
 
 from asgiref.sync import sync_to_async
 from channels.consumer import AsyncConsumer
-# from rabbitmq.recieve import consume
 import pika
 from redis_notifications import getDeclined, delDeclined
 
@@ -13,9 +12,9 @@ class AcceptTaskConsumer(AsyncConsumer):
     body = []
     delivery = {}
 
-    connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host='localhost'))
-    channel = connection.channel()
+    # connection = pika.BlockingConnection(
+    #     pika.ConnectionParameters(host='localhost'))
+    # channel = connection.channel()
 
     async def websocket_connect(self, event):
         print("AcceptTaskConsumer connected", event)
@@ -82,9 +81,9 @@ class AcceptTaskConsumer(AsyncConsumer):
     @classmethod
     @sync_to_async
     def get_task(cls):
-        # cls.connection = pika.BlockingConnection(
-        #     pika.ConnectionParameters(host='localhost'))
-        # cls.channel = cls.connection.channel()
+        cls.connection = pika.BlockingConnection(
+            pika.ConnectionParameters(host='localhost'))
+        cls.channel = cls.connection.channel()
 
         cls.channel.queue_declare(queue='task_', arguments={"x-max-priority": 3})
 
@@ -111,34 +110,36 @@ class AcceptTaskConsumer(AsyncConsumer):
             self.channel_name
         )
 
-# class DeclinedTaskConsumer(AsyncConsumer):
-#     async def websocket_connect(self, event):
-#         print("DeclinedTaskConsumer connected ", event)
-#         await self.send({
-#             "type": "websocket.accept"
-#         })
-#
-#     async def websocket_receive(self, event):
-#         print("Declined received ", event)
-#         if event["text"] == "Hi":
-#             declined = await self.getDec()
-#             print("declined", declined)
-#             await self.send({
-#                 "type": "websocket.accept",
-#                 "text": json.dumps(declined)
-#             })
-#
-#             delDeclined()
-#
-#     async def websocket_disconnect(self, event):
-#         print(event)
-#         await self.send({
-#             "type": "websocket.close"
-#         })
-#
-#     @sync_to_async
-#     def getDec(self):
-#         while True:
-#             x = getDeclined()
-#             if x is not None:
-#                 return x
+
+
+class DeclinedTaskConsumer(AsyncConsumer):
+    async def websocket_connect(self, event):
+        print("DeclinedTaskConsumer connected ", event)
+        await self.send({
+            "type": "websocket.accept"
+        })
+
+    async def websocket_receive(self, event):
+        print("Declined received ", event)
+        if event["text"] == "Hi":
+            declined = await self.getDec()
+            print("declined", declined)
+            await self.send({
+                "type": "websocket.accept",
+                "text": json.dumps(declined)
+            })
+
+            delDeclined()
+
+    async def websocket_disconnect(self, event):
+        print(event)
+        await self.send({
+            "type": "websocket.close"
+        })
+
+    @sync_to_async
+    def getDec(self):
+        while True:
+            x = getDeclined()
+            if x is not None:
+                return x
