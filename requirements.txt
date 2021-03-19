@@ -1,6 +1,6 @@
 channels==2.4.0
 Django==3.0.5
 django-fsm==2.7.0
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 pika==1.1.0
 redis==2.10.6
